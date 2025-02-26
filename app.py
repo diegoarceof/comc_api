@@ -1,5 +1,7 @@
+import numpy as np
+
 from fastapi import FastAPI
-import uvicorn
+
 
 app = FastAPI()
 
@@ -14,3 +16,7 @@ def hello():
 @app.get("/greet/{name}")
 def greet(name: str):
     return {"message": f"Hello, {name}!"}   
+
+@app.get("/vector/{dim}")
+def vector(dim: int):
+    return {"vector": np.random.random(dim).tolist()}
