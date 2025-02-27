@@ -172,6 +172,3 @@ cython_debug/
 
 # Pyenv python version
 .python-version
-
-# Ignore changes to the embeddings folder
-embeddings/

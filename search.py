@@ -2,8 +2,8 @@ import faiss
 import numpy as np
 
 # Load the embeddings and reshape them
-dimensions = 75264
-embeddings_database = np.load('embeddings/swim_embeddings.npy').reshape(-1, dimensions)
+embeddings_database = np.load('../comc_embeddings/swim_embeddings.npy')
+dimensions = embeddings_database.shape[1]
 
 # Create the indexes
 indexes = {
