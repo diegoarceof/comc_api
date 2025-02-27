@@ -47,7 +47,7 @@ async def main():
     
     # Process the results from each API
     for i, result in enumerate(results):
-        print(f"Result from API {i+1}: {type(result) if isinstance(result, (dict, list)) else result}")
+        print(f"Result from API {i+1}: {result.keys() if isinstance(result, (dict, list)) else result}")
 
 # Run the async main function
 if __name__ == "__main__":
