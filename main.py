@@ -39,11 +39,11 @@ async def main():
         "metric": "IP"
     }
     
-    start_time = time.time()
+    start_time = time.perf_counter()
     results = await call_all_apis(urls, payload)
-    end_time = time.time()
+    end_time = time.perf_counter()
     
-    print(f"All requests completed in {end_time - start_time:.2f} seconds")
+    print(f"All requests completed in {end_time - start_time:.3f} seconds")
     
     dict_results = [result for result in results if isinstance(result, dict)]
     distances = np.concat([np.array(result['distances']) for result in dict_results], axis=1)
@@ -55,6 +55,7 @@ async def main():
     # sorted_distances = np.take_along_axis(distances, sorted_indices, axis=1)
     # sorted_embeddings = np.take_along_axis(embeddings, sorted_indices, axis=1)
 
+    print(embeddings[sorted_indices].shape)
     # print(sorted_embeddings.shape)
 
 # Run the async main function
