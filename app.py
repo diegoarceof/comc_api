@@ -21,8 +21,8 @@ app = FastAPI()
 def root():
     return {"message": "COMC nearest neighbor search"}
 
-@app.post("/nearest_neighbor")
-async def nearest_neighbor(params: QueryParams):
+@app.post("/nearest_neighbors")
+async def nearest_neighbors(params: QueryParams):
     embeddings = np.array(params.embeddings)
     n_neighbors = params.n_neighbors
     metric = params.metric.value
