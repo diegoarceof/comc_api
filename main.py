@@ -32,10 +32,10 @@ async def main():
     
     # Common payload for all endpoints
     np.random.seed(0)
-    embeddings = np.random.rand(3, 75264).tolist()
+    embeddings = np.random.rand(1, 75264).tolist()
     payload = {
         "embeddings": embeddings,
-        "n_neighbors": 2,
+        "n_neighbors": 1,
         "metric": "IP"
     }
     
