@@ -32,10 +32,14 @@ async def main():
     
     # Common payload for all endpoints
     np.random.seed(0)
-    embeddings = np.random.rand(3, 75264).tolist()
+
+    n_neighbors = 10
+    n_images = 1
+
+    embeddings = np.random.rand(n_images, 75264).tolist()
     payload = {
         "embeddings": embeddings,
-        "n_neighbors": 10,
+        "n_neighbors": n_neighbors,
         "metric": "IP"
     }
     
@@ -51,7 +55,9 @@ async def main():
 
     # I want to sort the embeddings by their distances
     sorted_indices = np.argsort(distances, axis=1)
-    np.take_along_axis(embeddings, sorted_indices[..., None], axis=1)
+    sorted_embeddings = np.take_along_axis(embeddings, sorted_indices[..., None], axis=1)
+
+    print(sorted_embeddings[:,:n_neighbors,:].shape)
 
 # Run the async main function
 if __name__ == "__main__":
