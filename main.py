@@ -47,7 +47,7 @@ async def main():
     
     dict_results = [result for result in results if isinstance(result, dict)]
     for result in dict_results:
-        print(result['distances'].shape, result['nearest_embeddings'].shape)
+        print(np.array(result['distances']).shape, np.array(result['nearest_embeddings']).shape)
 
 # Run the async main function
 if __name__ == "__main__":
