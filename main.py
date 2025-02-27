@@ -27,7 +27,7 @@ async def main():
     }
 
     urls = [
-        f"http://{ip}:8080/nearest_neighbors" for ip in ips.values()
+        f"http://{ip}:8000/nearest_neighbors" for ip in ips.values()
     ]
     
     # Common payload for all endpoints
