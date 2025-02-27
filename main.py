@@ -51,12 +51,7 @@ async def main():
 
     # I want to sort the embeddings by their distances
     sorted_indices = np.argsort(distances, axis=1)
-    print(sorted_indices, distances)
-    # sorted_distances = np.take_along_axis(distances, sorted_indices, axis=1)
-    # sorted_embeddings = np.take_along_axis(embeddings, sorted_indices, axis=1)
-
-    print(np.take_along_axis(embeddings, sorted_indices[..., None], axis=2).shape)
-    # print(sorted_embeddings.shape)
+    np.take_along_axis(embeddings, sorted_indices[..., None], axis=1))
 
 # Run the async main function
 if __name__ == "__main__":
