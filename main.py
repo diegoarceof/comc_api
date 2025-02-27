@@ -35,7 +35,7 @@ async def main():
     embeddings = np.random.rand(1, 75264).tolist()
     payload = {
         "embeddings": embeddings,
-        "n_neighbors": 1,
+        "n_neighbors": 10,
         "metric": "IP"
     }
     
