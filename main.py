@@ -45,7 +45,7 @@ async def main():
     
     print(f"All requests completed in {end_time - start_time:.2f} seconds")
     
-    dict_results = [result for result in results if isinstance(i, dict)]
+    dict_results = [result for result in results if isinstance(result, dict)]
     for result in dict_results:
         print(result['distances'].shape, result['nearest_embeddings'].shape)
 
