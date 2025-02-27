@@ -45,12 +45,9 @@ async def main():
     
     print(f"All requests completed in {end_time - start_time:.2f} seconds")
     
-    dict_results = [i for i in results if isinstance(i, dict)]
-    distances = np.concatenate([result['distances'] for result in dict_results], axis = 1)
-    embeddings = np.concatenate([result['nearest_embeddings'] for result in dict_results], axis = 1)
-
-    print(f"Distances: {distances.shape()}")
-    print(f"Embeddings: {embeddings.shape()}")        
+    dict_results = [result for result in results if isinstance(i, dict)]
+    for result in dict_results:
+        print(result['distances'].shape, result['nearest_embeddings'].shape)
 
 # Run the async main function
 if __name__ == "__main__":
