@@ -46,8 +46,15 @@ async def main():
     print(f"All requests completed in {end_time - start_time:.2f} seconds")
     
     dict_results = [result for result in results if isinstance(result, dict)]
-    for result in dict_results:
-        print(np.array(result['distances']).shape, np.array(result['nearest_embeddings']).shape)
+    distances = np.concat([np.array(result['distances']) for result in dict_results], axis=1)
+    embeddings = np.concat([np.array(result['nearest_embeddings']) for result in dict_results], axis=1)
+
+    # I want to sort the embeddings by their distances
+    sorted_indices = np.argsort(distances, axis=1)
+    sorted_distances = np.take_along_axis(distances, sorted_indices, axis=1)
+    sorted_embeddings = np.take_along_axis(embeddings, sorted_indices, axis=1)
+
+    print(sorted_embeddings.shape)
 
 # Run the async main function
 if __name__ == "__main__":
