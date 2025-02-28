@@ -40,7 +40,8 @@ async def main():
     payload = {
         "embeddings": embeddings,
         "n_neighbors": n_neighbors,
-        "metric": "IP"
+        "metric": "IP",
+        "n_cpus": 4
     }
     
     start_time = time.perf_counter()
@@ -50,8 +51,8 @@ async def main():
     print(f"All requests completed in {end_time - start_time:.3f} seconds")
     
     dict_results = [result for result in results if isinstance(result, dict)]
-    distances = np.concat([np.array(result['distances']) for result in dict_results], axis=1)
-    embeddings = np.concat([np.array(result['nearest_embeddings']) for result in dict_results], axis=1)
+    distances = np.concatenate([np.array(result['distances']) for result in dict_results], axis=1)
+    embeddings = np.concatenate([np.array(result['nearest_embeddings']) for result in dict_results], axis=1)
 
     # I want to sort the embeddings by their distances
     sorted_indices = np.argsort(distances, axis=1)
