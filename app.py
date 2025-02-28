@@ -14,6 +14,7 @@ class QueryParams(BaseModel):
     embeddings: list[list[float]]
     n_neighbors: int = 5
     metric: Metric = Metric.inner_product
+    n_cpus: int = 3
 
 app = FastAPI()
 
@@ -26,8 +27,10 @@ async def nearest_neighbors(params: QueryParams):
     embeddings = np.array(params.embeddings)
     n_neighbors = params.n_neighbors
     metric = params.metric.value
+    
+    n_cpus = params.n_cpus
 
-    distances, nearest_embeddings = query(embeddings, n_neighbors, metric)
+    distances, nearest_embeddings = query(embeddings, n_neighbors, metric, n_cpus)
     return {
         'distances': distances.tolist(),
         'nearest_embeddings': nearest_embeddings.tolist()

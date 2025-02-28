@@ -15,7 +15,9 @@ for index in indexes:
     indexes[index].add(embeddings_database)
 
 # Query the embeddings
-def query(embeddings, n_neighbors, metric):
+def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
+    faiss.omp_set_num_threads(n_cpus)
+
     index = indexes[metric]
     distances, indices = index.search(embeddings, n_neighbors)
     
