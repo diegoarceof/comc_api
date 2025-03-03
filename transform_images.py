@@ -54,8 +54,8 @@ if __name__ == "__main__":
     
     # Check if the loaded images are the same as the original images
     if not np.all(images[indices] == loaded_images):
-        print(loaded_images[0])
-        print(images[indices][0])
+        print(loaded_images[0][:100])
+        print(images[indices][0][:100])
         print("Images do not match")
     else:
         print("Images match")
