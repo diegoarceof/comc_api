@@ -20,15 +20,10 @@ async def call_all_apis(urls, payload):
 
 async def main():
     # List of your API endpoints
-    ips = {
-        'hal9004': '192.168.50.113',
-        'hal9005': '192.168.50.153',
-        'hal9006': '192.168.50.166'
-    }
+    ports = ['8004', '8005', '8006']
 
-    urls = [
-        f"http://{ip}:8000/nearest_neighbors" for ip in ips.values()
-    ]
+    base_url = 'http://compute.hal9.com:{port}/nearest_neighbors'
+    urls = [base_url.format(port=port) for port in ports]
     
     # Common payload for all endpoints
     np.random.seed(0)
@@ -63,4 +58,3 @@ async def main():
 # Run the async main function
 if __name__ == "__main__":
     asyncio.run(main())
-

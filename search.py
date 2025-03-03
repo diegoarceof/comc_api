@@ -11,8 +11,8 @@ indexes = {
     'IP': faiss.IndexFlatIP(dimensions)
 }
 
-for index in indexes:
-    indexes[index].add(embeddings_database)
+for index in indexes.values():
+    index.add(embeddings_database)
 
 # Query the embeddings
 def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
