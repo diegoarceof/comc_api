@@ -1,3 +1,4 @@
+import os
 import lmdb
 import numpy as np
 import pickle
@@ -43,11 +44,13 @@ if __name__ == "__main__":
     images = np.load('../comc_images/encoded_images.npy', allow_pickle=True)
     
     # Save the images to LMDB
-    save_to_lmdb(images, '../comc_images/swim_images.lmdb')
-    
+    lmdb_path = '../comc_images/swim_images.lmdb'
+    if not os.path.exists(lmdb_path):
+        save_to_lmdb(images, lmdb_path) 
+   
     # Load specific indices
     indices = np.random.randint(0, len(images), 10)
-    loaded_images = load_images_from_lmdb('swim_images.lmdb', indices)
+    loaded_images = load_images_from_lmdb(lmdb_path, indices)
     
     # Check if the loaded images are the same as the original images
     print(np.all(images[indices] == loaded_images))
