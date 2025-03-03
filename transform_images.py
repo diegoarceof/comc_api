@@ -53,4 +53,9 @@ if __name__ == "__main__":
     loaded_images = load_images_from_lmdb(lmdb_path, indices)
     
     # Check if the loaded images are the same as the original images
-    print(np.all(images[indices] == loaded_images))
+    if not np.all(images[indices] == loaded_images):
+        print(loaded_images[0])
+        print(images[indices][0])
+        print("Images do not match")
+    else:
+        print("Images match")
