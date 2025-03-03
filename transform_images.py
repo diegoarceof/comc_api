@@ -40,7 +40,7 @@ def load_images_from_lmdb(lmdb_path, indices):
 
 if __name__ == "__main__":
     # Load the images
-    images = np.load('../comc_images/swim_images.npy')
+    images = np.load('../comc_images/encoded_images.npy')
     
     # Save the images to LMDB
     save_to_lmdb(images, '../comc_images/swim_images.lmdb')
