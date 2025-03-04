@@ -25,7 +25,7 @@ jobs:
       - name: Pull Latest Changes, Setup Virtual Environment, and Install Requirements
         run: |
           for n in 1 4 5 6; do
-            ssh -p 2200$n hal900$n@compute.hal9.com "cd comc_api/ && git stash && git pull origin main && \
+            ssh -o StrictHostKeyChecking=no -p 2200$n hal900$n@compute.hal9.com "cd comc_api/ && git stash && git pull origin main && \
             if [ ! -d '.venv' ]; then python3 -m venv .venv; fi && \
             source .venv/bin/activate && \
             pip install -r requirements.txt && \
