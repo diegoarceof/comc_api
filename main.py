@@ -64,6 +64,7 @@ async def main(embeddings: list, n_neighbors: int):
     image_urls = np.char.add(images_base_url,  sorted_images[:,:n_neighbors].reshape(n_images*n_neighbors))    
 
     response = await call_urls(*image_urls)
+    print(response)
 
     t1 = time.perf_counter()
     print(f"Total time taken: {t1 - t0:.3f} seconds")
