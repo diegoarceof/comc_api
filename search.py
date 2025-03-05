@@ -1,3 +1,4 @@
+import base64
 import faiss
 import lmdb
 import numpy as np
@@ -50,9 +51,9 @@ def load_images_from_lmdb(indices):
                 results[idx] = pickle.loads(img_bytes)
     
     env.close()
-    
+     
     # Return in the order of indices
-    return [results[idx] for idx in indices if idx in results]
+    return [base64.encode(results[idx]).decode('utf-8') for idx in indices if idx in results]
 
 # Query the embeddings
 def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
@@ -61,7 +62,7 @@ def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
     index = indexes[metric]
     distances, indices = index.search(embeddings, n_neighbors)
     images_data = [load_images_from_lmdb(idxs) for idxs in indices]
-    
+
     print('Search successful')
     
     return distances, images_data
