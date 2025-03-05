@@ -29,6 +29,9 @@ jobs:
             if [ ! -d '.venv' ]; then python3 -m venv .venv; fi && \
             source .venv/bin/activate && \
             pip install -r requirements.txt && \
+            echo "Stopping previous api.py process" && \
             pgrep -f api.py && pkill -9 -f api.py || true && \
-            nohup python api.py > api.log 2>&1"
+            echo "Process stopped, starting new one"  && \
+            nohup python api.py > api.log 2>&1 && \
+            echo "Started new process" "
           done
