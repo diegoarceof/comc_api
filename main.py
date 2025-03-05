@@ -60,7 +60,8 @@ async def main(embeddings: list, n_neighbors: int):
 
     n_images = len(embeddings)
     images_base_url = 'https://temphal9.s3.us-west-2.amazonaws.com/comc/data/0.0.1/extracted/'
-    image_urls = images_base_url + sorted_images[:,:n_neighbors].reshape(n_images*n_neighbors)
+
+    image_urls = np.char.add(images_base_url,  sorted_images[:,:n_neighbors].reshape(n_images*n_neighbors))    
 
     response = await call_urls(*image_urls)
 
