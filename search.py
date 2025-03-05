@@ -53,7 +53,7 @@ def load_images_from_lmdb(indices):
     env.close()
      
     # Return in the order of indices
-    return [base64.encode(results[idx]).decode('utf-8') for idx in indices if idx in results]
+    return [base64.b64encode(results[idx]).decode('utf-8') for idx in indices if idx in results]
 
 # Query the embeddings
 def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
