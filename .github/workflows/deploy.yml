@@ -1,37 +1,62 @@
 name: Deploy API to Remote Machines
-
 on:
   push:
     branches:
       - main 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
+      
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" >> ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
       
       - name: Add remote server to known_hosts
-        run: mkdir -p ~/.ssh && echo "StrictHostKeyChecking no" >> ~/.ssh/config
-
+        run: |
+          mkdir -p ~/.ssh
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+      
       - name: Pull Latest Changes, Setup Virtual Environment, and Install Requirements
         run: |
           for n in 4 5 6; do
-            ssh -o StrictHostKeyChecking=no -p 2200$n hal900$n@compute.hal9.com "cd comc_api/ && git stash && git pull origin main && \
-            if [ ! -d '.venv' ]; then python3 -m venv .venv; fi && \
-            source .venv/bin/activate && \
-            pip install -r requirements.txt && \
-            echo "Stopping previous api.py process" && \
-            pgrep -f api.py && pkill -9 -f api.py || true && \
-            echo "Process stopped, starting new one"  && \
-            nohup python api.py > api.log 2>&1 & disown && \
-            echo "Started new process" "
+            ssh -o StrictHostKeyChecking=no -p 2200$n hal900$n@compute.hal9.com << 'ENDSSH'
+              cd comc_api/
+              
+              # Stash any local changes and pull latest
+              git stash
+              git pull origin main
+              
+              # Create virtual environment if not exists
+              if [ ! -d '.venv' ]; then
+                python3 -m venv .venv
+              fi
+              
+              # Activate virtual environment
+              source .venv/bin/activate
+              
+              # Install requirements
+              pip install -r requirements.txt
+              
+              # Find and kill existing API processes more robustly
+              echo "Stopping previous api.py processes"
+              pkill -f 'python.*api.py' || true
+              
+              # Small delay to ensure processes are terminated
+              sleep 2
+              
+              # Start new process with better logging and process management
+              nohup python api.py > api.log 2>&1 &
+              
+              # Verify process is running
+              sleep 3
+              pgrep -f 'python.*api.py' && echo "API started successfully" || echo "API failed to start"
+              
+              # Deactivate virtual environment
+              deactivate
+            ENDSSH
           done
