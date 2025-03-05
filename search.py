@@ -69,5 +69,5 @@ if __name__ == '__main__':
     n_neighbors = 10
 
     indices = np.random.randint(0, embeddings_database.shape[0], (10,10))
-    load_images_from_lmdb(indices)
+    [load_images_from_lmdb(idxs) for idxs in indices]
     print('Loaded Images succesfully')
