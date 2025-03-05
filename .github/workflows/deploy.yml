@@ -32,6 +32,6 @@ jobs:
             echo "Stopping previous api.py process" && \
             pgrep -f api.py && pkill -9 -f api.py || true && \
             echo "Process stopped, starting new one"  && \
-            nohup python api.py > api.log 2>&1 && \
+            nohup python api.py > api.log 2>&1 & disown && \
             echo "Started new process" "
           done
