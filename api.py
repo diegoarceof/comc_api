@@ -30,10 +30,10 @@ async def nearest_neighbors(params: QueryParams):
     
     n_cpus = params.n_cpus
 
-    distances, nearest_embeddings = query(embeddings, n_neighbors, metric, n_cpus)
+    distances, images = query(embeddings, n_neighbors, metric, n_cpus)
     return {
         'distances': distances.tolist(),
-        'nearest_embeddings': nearest_embeddings.tolist()
+        'images': images
         }
 
 if __name__ == "__main__":

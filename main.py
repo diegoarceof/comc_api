@@ -47,13 +47,13 @@ async def main():
     
     dict_results = [result for result in results if isinstance(result, dict)]
     distances = np.concatenate([np.array(result['distances']) for result in dict_results], axis=1)
-    embeddings = np.concatenate([np.array(result['nearest_embeddings']) for result in dict_results], axis=1)
+    images = np.concatenate([np.array(result['images']) for result in dict_results], axis=1)
 
     # I want to sort the embeddings by their distances
     sorted_indices = np.argsort(distances, axis=1)
-    sorted_embeddings = np.take_along_axis(embeddings, sorted_indices[..., None], axis=1)
+    sorted_images = np.take_along_axis(images, sorted_indices[..., None], axis=1)
 
-    print(sorted_embeddings[:,:n_neighbors,:].shape)
+    print(sorted_images[:,:n_neighbors,:].shape)
 
 # Run the async main function
 if __name__ == "__main__":
