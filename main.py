@@ -6,10 +6,6 @@ import numpy as np
 
 async def call_api(session, url, payload):
     async with session.post(url, json=payload) as response:
-        response_text = await response.text()
-        print(url)
-        print(f"Response status: {response.status}")
-        print(f"Response content: {response_text}")
         return await response.json()
 
 async def call_all_apis(urls, payload):
@@ -23,6 +19,7 @@ async def call_all_apis(urls, payload):
         return results
 
 async def main():
+    t0 = time.perf_counter()
     # List of your API endpoints
     ports = ['8004', '8005', '8006']
 
@@ -50,14 +47,15 @@ async def main():
     print(f"All requests completed in {end_time - start_time:.3f} seconds")
     
     dict_results = [result for result in results if isinstance(result, dict)]
-    distances = np.concatenate([np.array(result['distances']) for result in dict_results], axis=1)
-    images = np.concatenate([np.array(result['images']) for result in dict_results], axis=1)
+    distances = np.concatenate([result['distances'] for result in dict_results], axis=1)
+    images = np.concatenate([result['images'] for result in dict_results], axis=1)
 
     # I want to sort the embeddings by their distances
     sorted_indices = np.argsort(distances, axis=1)
-    sorted_images = np.take_along_axis(images, sorted_indices[..., None], axis=1)
+    sorted_images = np.take_along_axis(images, sorted_indices, axis=1)
 
-    print(sorted_images[:,:n_neighbors,:].shape)
+    t1 = time.perf_counter()
+    print(f"Total time taken: {t1 - t0:.3f} seconds")
 
 # Run the async main function
 if __name__ == "__main__":
