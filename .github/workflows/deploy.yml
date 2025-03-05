@@ -28,7 +28,5 @@ jobs:
             ssh -o StrictHostKeyChecking=no -p 2200$n hal900$n@compute.hal9.com "cd comc_api/ && git stash && git pull origin main && \
             if [ ! -d '.venv' ]; then python3 -m venv .venv; fi && \
             source .venv/bin/activate && \
-            pip install -r requirements.txt && \
-            # pgrep -f api.py && pkill -9 -f api.py || true && \
-            # nohup python api.py > api.log 2>&1"
+            pip install -r requirements.txt"
           done
