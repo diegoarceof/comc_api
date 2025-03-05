@@ -61,4 +61,13 @@ def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
     index = indexes[metric]
     distances, indices = index.search(embeddings, n_neighbors)
     
-    return distances, load_images_from_lmdb(indices)
+    return distances, [load_images_from_lmdb(idxs) for idxs in indices]
+
+if __name__ == '__main__':
+    # Test the query function
+    np.random.seed(0)
+    n_neighbors = 10
+
+    indices = np.random.randint(0, embeddings_database.shape[0], (10,10))
+    load_images_from_lmdb(indices)
+    print('Loaded Images succesfully')
