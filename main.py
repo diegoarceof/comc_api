@@ -6,6 +6,10 @@ import numpy as np
 
 async def call_api(session, url, payload):
     async with session.post(url, json=payload) as response:
+        response_text = await response.text()
+        print(url)
+        print(f"Response status: {response.status}")
+        print(f"Response content: {response_text}")
         return await response.json()
 
 async def call_all_apis(urls, payload):

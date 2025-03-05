@@ -60,5 +60,8 @@ def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
 
     index = indexes[metric]
     distances, indices = index.search(embeddings, n_neighbors)
+    images_data = [load_images_from_lmdb(idxs) for idxs in indices]
     
-    return distances, [load_images_from_lmdb(idxs) for idxs in indices]
+    print('Search successful')
+    
+    return distances, images_data
