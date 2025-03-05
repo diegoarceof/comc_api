@@ -31,7 +31,7 @@ jobs:
             pip install -r requirements.txt && \
             if [ \"$n\" -ne 1 ]; then
               echo "Attempting to stop api process"
-              pkill -9 -f api.py;  # Try normal kill first, force if needed
+              pkill -9 -f api.py  # Try normal kill first, force if needed
               nohup python api.py > api.log 2>&1 &  # Restart
             fi"
           done
