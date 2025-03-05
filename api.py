@@ -31,6 +31,7 @@ async def nearest_neighbors(params: QueryParams):
     n_cpus = params.n_cpus
 
     distances, images = query(embeddings, n_neighbors, metric, n_cpus)
+    print(images)
     return {
         'distances': distances.tolist(),
         'images': images
