@@ -25,38 +25,38 @@ jobs:
         run: |
           for n in 4 5 6; do
             ssh -o StrictHostKeyChecking=no -p 2200$n hal900$n@compute.hal9.com << 'ENDSSH'
-              cd comc_api/
+            cd comc_api/
               
-              # Stash any local changes and pull latest
-              git stash
-              git pull origin main
-              
-              # Create virtual environment if not exists
-              if [ ! -d '.venv' ]; then
-                python3 -m venv .venv
-              fi
-              
-              # Activate virtual environment
-              source .venv/bin/activate
-              
-              # Install requirements
-              pip install -r requirements.txt
-              
-              # Find and kill existing API processes more robustly
-              echo "Stopping previous api.py processes"
-              pkill -f 'python.*api.py' || true
-              
-              # Small delay to ensure processes are terminated
-              sleep 2
-              
-              # Start new process with better logging and process management
-              nohup python api.py > api.log 2>&1 &
-              
-              # Verify process is running
-              sleep 3
-              pgrep -f 'python.*api.py' && echo "API started successfully" || echo "API failed to start"
-              
-              # Deactivate virtual environment
-              deactivate
+            # Stash any local changes and pull latest
+            git stash
+            git pull origin main
+            
+            # Create virtual environment if not exists
+            if [ ! -d '.venv' ]; then
+              python3 -m venv .venv
+            fi
+            
+            # Activate virtual environment
+            source .venv/bin/activate
+            
+            # Install requirements
+            pip install -r requirements.txt
+            
+            # Find and kill existing API processes more robustly
+            echo "Stopping previous api.py processes"
+            pkill -f 'python.*api.py' || true
+            
+            # Small delay to ensure processes are terminated
+            sleep 2
+            
+            # Start new process with better logging and process management
+            nohup python api.py > api.log 2>&1 &
+            
+            # Verify process is running
+            sleep 3
+            pgrep -f 'python.*api.py' && echo "API started successfully" || echo "API failed to start"
+            
+            # Deactivate virtual environment
+            deactivate
             ENDSSH
           done
