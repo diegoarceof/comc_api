@@ -15,48 +15,44 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-      
-      - name: Add remote server to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          echo "StrictHostKeyChecking no" >> ~/.ssh/config
-      
-      - name: Pull Latest Changes, Setup Virtual Environment, and Install Requirements
+          ssh-keyscan -H compute.hal9.com >> ~/.ssh/known_hosts
+
+      - name: Deploy to Remote Servers
         run: |
           for n in 4 5 6; do
-            ssh -o StrictHostKeyChecking=no -p 2200$n hal900$n@compute.hal9.com
-            cd comc_api/
+            ssh -o StrictHostKeyChecking=no -p 2200$n hal900$n@compute.hal9.com <<EOF
+              cd comc_api/
               
-            # Stash any local changes and pull latest
-            git stash
-            git pull origin main
-            
-            # Create virtual environment if not exists
-            if [ ! -d '.venv' ]; then
-              python3 -m venv .venv
-            fi
-            
-            # Activate virtual environment
-            source .venv/bin/activate
-            
-            # Install requirements
-            pip install -r requirements.txt
-            
-            # Find and kill existing API processes more robustly
-            echo "Stopping previous api.py processes"
-            pkill -f 'python.*api.py' || true
-            
-            # Small delay to ensure processes are terminated
-            sleep 2
-            
-            # Start new process with better logging and process management
-            nohup python api.py > api.log 2>&1 &
-            
-            # Verify process is running
-            sleep 3
-            pgrep -f 'python.*api.py' && echo "API started successfully" || echo "API failed to start"
-            
-            # Deactivate virtual environment
-            deactivate
-            ENDSSH
+              # Stash any local changes and pull latest
+              git stash
+              git pull origin main
+              
+              # Create virtual environment if not exists
+              if [ ! -d ".venv" ]; then
+                python3 -m venv .venv
+              fi
+              
+              # Activate virtual environment
+              source .venv/bin/activate
+              
+              # Install requirements
+              pip install -r requirements.txt
+              
+              # Stop previous API processes
+              echo "Stopping previous api.py processes"
+              pkill -f 'python.*api.py' || true
+              
+              # Small delay to ensure processes are terminated
+              sleep 2
+              
+              # Start new process
+              nohup python api.py > api.log 2>&1 &
+              
+              # Verify process is running
+              sleep 3
+              pgrep -f 'python.*api.py' && echo "API started successfully" || echo "API failed to start"
+              
+              # Deactivate virtual environment
+              deactivate
+            EOF
           done
