@@ -20,11 +20,11 @@ async def get_url(session, url):
 async def call_urls(*urls, payload = None):    
     async with aiohttp.ClientSession() as session:
         if payload is None:
-            func = lambda url: get_url(session, url)
+            method = lambda url: get_url(session, url)
         else:
-            func = lambda url: post_url(session, url, payload)
+            method = lambda url: post_url(session, url, payload)
 
-        tasks = [asyncio.create_task(func(url)) for url in urls]
+        tasks = [asyncio.create_task(method(url)) for url in urls]
                 
         # Wait for all tasks to complete and return results
         results = await asyncio.gather(*tasks)
@@ -64,7 +64,7 @@ async def main(embeddings: list, n_neighbors: int):
     image_urls = np.char.add(images_base_url,  sorted_images[:,:n_neighbors].reshape(n_images*n_neighbors))    
 
     response = await call_urls(*image_urls)
-    print(response)
+    # print(response)
 
     t1 = time.perf_counter()
     print(f"Total time taken: {t1 - t0:.3f} seconds")
