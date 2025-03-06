@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import aiohttp
 import time
@@ -30,7 +31,7 @@ async def call_urls(*urls, payload = None):
         results = await asyncio.gather(*tasks)
         return results
     
-async def main(embeddings: list, n_neighbors: int):
+async def main(embeddings: list, n_neighbors: int, n_cpus: int):
     t0 = time.perf_counter()
     # List of your API endpoints
     base_url = 'http://compute.hal9.com:{port}/nearest_neighbors'
@@ -41,7 +42,7 @@ async def main(embeddings: list, n_neighbors: int):
         "embeddings": embeddings,
         "n_neighbors": n_neighbors,
         "metric": "IP",
-        "n_cpus": 4
+        "n_cpus": n_cpus
     }
     
     start_time = time.perf_counter()
@@ -67,14 +68,22 @@ async def main(embeddings: list, n_neighbors: int):
     # print(response)
 
     t1 = time.perf_counter()
+    print(f'Time formatting and downloading images: {t1-end_time:.3f} seconds')
     print(f"Total time taken: {t1 - t0:.3f} seconds")
 
 # Run the async main function
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--n_images', type=int, default=3, help='Number of images')
+    parser.add_argument('-n', '--n_neighbors', type=int, default=5, help='Number of neighbors')
+    parser.add_argument('-c', '--n_cpus', type=int, default=4, help='Number of CPUs')
+    args = parser.parse_args()
+
     np.random.seed(0)
 
-    n_images = 3
-    n_neighbors = 5
+    n_images = args.n_images
+    n_neighbors = args.n_neighbors
+    n_cpus = args.n_cpus
 
     embeddings = np.random.rand(n_images, 75264).tolist()
-    asyncio.run(main(embeddings, n_neighbors))
+    asyncio.run(main(embeddings, n_neighbors, n_cpus))
