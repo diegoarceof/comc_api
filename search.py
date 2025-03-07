@@ -1,20 +1,19 @@
 import faiss
 import numpy as np
 
+def create_index():
+    embeddings_database = np.load('../comc_images/swim_embeddings.npy')
+    embeddings_database /= np.linalg.norm(embeddings_database, keepdims=True)
+    dimensions = embeddings_database.shape[1]
+
+    # Create the index
+    index = faiss.IndexFlatIP(dimensions)
+    index.add(embeddings_database)
+
+    return index
+
 image_names = np.load('../comc_images/image_names.npy')
-
-# Load the embeddings and reshape them
-embeddings_database = np.load('../comc_images/swim_embeddings.npy')
-embeddings_database /= np.linalg.norm(embeddings_database, keepdims=True)
-dimensions = embeddings_database.shape[1]
-
-# Create the index
-index = faiss.IndexFlatIP(dimensions)
-index.add(embeddings_database)
-
-del embeddings_database
-import gc
-gc.collect()
+index = create_index()
 
 # Query the embeddings
 def query(embeddings: np.array, n_neighbors: int, n_cpus: int = 3):
