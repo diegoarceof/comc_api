@@ -20,7 +20,7 @@ for index in indexes.values():
 # Query the embeddings
 def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
     faiss.omp_set_num_threads(n_cpus)
-    print(f'[Search] Initializing query search with {n_cpus} CPUs')
+    print(f'[Search] Initializing query search with {n_cpus} CPUs, {metric = }')
 
     index = indexes[metric]
     distances, indices = index.search(embeddings, n_neighbors)
