@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from pydantic import BaseModel
 from typing import List
 
@@ -82,11 +82,6 @@ async def main(embeddings: np.array, n_neighbors: int, n_cpus: int):
 
     return arr_response
 
-class SearchParams(BaseModel):
-    database_name: str = 'COMC'
-    n_neighbors: int = 10
-    n_cpus: int = 7
-
 # Initialize the app
 app = FastAPI()
 
@@ -97,14 +92,16 @@ def root():
 
 # Search endpoint to call each API
 @app.post("/search")
-async def upload_images(data: SearchParams, files: List[UploadFile] = File(...)):
+async def upload_images(
+        files: List[UploadFile] = File(...),
+        database_name: str = Form('COMC'),
+        n_neighbors: int = Form(10),
+        n_cpus: int = Form(7)
+    ):
+
     images = files
     embeddings = [get_embeddings(await file.read()) for file in images]
-
-    n_neighbors = data.n_neighbors
-    n_cpus = data.n_cpus
-    database_name = data.database_name
-
+    
     response = await main(embeddings, n_neighbors, n_cpus, database_name)
     return {'names': response.tolist()}
 
