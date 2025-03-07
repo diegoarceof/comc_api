@@ -23,7 +23,10 @@ def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
 
     index = indexes[metric]
     distances, indices = index.search(embeddings, n_neighbors)
+    names = image_names[indices]
     print(f'[Search] Found {n_neighbors} neighbors')
-    print(f'[Search] First 3 indices {indices[:, :3]}')
 
-    return distances, image_names[indices]
+    print(f'[Search] First 3 indices {indices[:, :3]}')
+    print(f'[Search] First three image names: {names[:,:3]}', end = '\n\n')
+
+    return distances, names
