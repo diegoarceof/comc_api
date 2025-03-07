@@ -100,7 +100,7 @@ async def upload_images(
     ):
 
     print(type(await files[0].read()))
-    embeddings = [get_embeddings(await file.read()) for file in files]
+    embeddings = get_embeddings([await file.read() for file in files])
     
     response = await main(embeddings, n_neighbors, n_cpus, database_name)
     return {'names': response.tolist()}
