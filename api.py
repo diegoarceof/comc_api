@@ -6,14 +6,9 @@ from pydantic import BaseModel
 
 from search import query
 
-class Metric(str, Enum):
-    euclidean = "euclidean" # L2 distance  
-    inner_product = "IP" # dot product
-
 class QueryParams(BaseModel):
     embeddings: list[list[float]]
     n_neighbors: int = 5
-    metric: Metric = Metric.inner_product
     n_cpus: int = 3
 
 app = FastAPI()
@@ -26,11 +21,10 @@ def root():
 async def nearest_neighbors(params: QueryParams):
     embeddings = np.array(params.embeddings)
     n_neighbors = params.n_neighbors
-    metric = params.metric.value
     
     n_cpus = params.n_cpus
-
-    distances, images = query(embeddings, n_neighbors, metric, n_cpus)
+    
+    distances, images = query(embeddings, n_neighbors, n_cpus)
     return {
         'distances': distances.tolist(),
         'images': images.tolist()

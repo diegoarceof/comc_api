@@ -8,21 +8,19 @@ embeddings_database = np.load('../comc_images/swim_embeddings.npy')
 embeddings_database /= np.linalg.norm(embeddings_database, keepdims=True)
 dimensions = embeddings_database.shape[1]
 
-# Create the indexes
-indexes = {
-    'euclidean': faiss.IndexFlatL2(dimensions), 
-    'IP': faiss.IndexFlatIP(dimensions)
-}
+# Create the index
+index = faiss.IndexFlatIP(dimensions)
+index.add(embeddings_database)
 
-for index in indexes.values():
-    index.add(embeddings_database)
+del embeddings_database
+import gc
+gc.collect()
 
 # Query the embeddings
-def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
+def query(embeddings: np.array, n_neighbors: int, n_cpus: int = 3):
     faiss.omp_set_num_threads(n_cpus)
-    print(f'[Search] Initializing query search with {n_cpus} CPUs, {metric = }')
+    print(f'[Search] Initializing query search with {n_cpus} CPUs')
 
-    index = indexes[metric]
     distances, indices = index.search(embeddings, n_neighbors)
     names = image_names[indices]
     print(f'[Search] Found {n_neighbors} neighbors')
