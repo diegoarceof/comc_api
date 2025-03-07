@@ -5,6 +5,7 @@ image_names = np.load('../comc_images/image_names.npy')
 
 # Load the embeddings and reshape them
 embeddings_database = np.load('../comc_images/swim_embeddings.npy')
+embeddings_database /= np.linalg.norm(embeddings_database, keepdims=True)
 dimensions = embeddings_database.shape[1]
 
 # Create the indexes
