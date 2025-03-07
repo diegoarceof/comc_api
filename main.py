@@ -83,7 +83,6 @@ async def main(embeddings: np.array, n_neighbors: int, n_cpus: int):
     return arr_response
 
 class SearchParams(BaseModel):
-    images: List[UploadFile] = File(...)
     database_name: str = 'COMC'
     n_neighbors: int = 10
     n_cpus: int = 7
@@ -98,8 +97,8 @@ def root():
 
 # Search endpoint to call each API
 @app.post("/search")
-async def upload_images(data: SearchParams):
-    images = data.images
+async def upload_images(data: SearchParams, files: List[UploadFile] = File(...)):
+    images = files
     embeddings = [get_embeddings(await file.read()) for file in images]
 
     n_neighbors = data.n_neighbors
