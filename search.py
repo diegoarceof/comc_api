@@ -19,8 +19,11 @@ for index in indexes.values():
 # Query the embeddings
 def query(embeddings: np.array, n_neighbors: int, metric: str, n_cpus: int = 3):
     faiss.omp_set_num_threads(n_cpus)
+    print(f'[Search] Initializing query search with {n_cpus} CPUs')
 
     index = indexes[metric]
     distances, indices = index.search(embeddings, n_neighbors)
-    
+    print(f'[Search] Found {n_neighbors} neighbors')
+    print(f'[Search] First 3 indices {indices[:, :3]}')
+
     return distances, image_names[indices]
