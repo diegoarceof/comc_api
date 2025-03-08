@@ -35,7 +35,7 @@ async def call_urls(*urls, payload = None):
         results = await asyncio.gather(*tasks)
         return results
 
-async def main(embeddings: np.array, n_neighbors: int, n_cpus: int):    
+async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_name: str):    
     t0 = time.perf_counter()
 
     ips = [
