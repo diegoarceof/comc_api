@@ -4,8 +4,8 @@ import time
 
 import numpy as np
 
+from datetime import datetime, timezone
 from fastapi import FastAPI, File, UploadFile, Form
-from pydantic import BaseModel
 from typing import List
 
 from image_utils import get_embeddings
@@ -92,7 +92,7 @@ async def upload_images(
         n_cpus: int = Form(7),
         timestamp: float = Form(...)
     ):
-    transfer_time = time.time() - timestamp
+    transfer_time = datetime.now(timezone.utc).timestamp() - timestamp
     print(f'Finding {n_neighbors} neighbors for {len(files)} images')
     print(f'Transfer time: {transfer_time: .2f} seconds')
 
