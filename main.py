@@ -99,7 +99,6 @@ async def upload_images(
         n_cpus: int = Form(7)
     ):
 
-    print((await files[0].read())[:100])
     embeddings = get_embeddings([await file.read() for file in files])
     
     response = await main(embeddings, n_neighbors, n_cpus, database_name)
