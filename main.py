@@ -52,6 +52,7 @@ async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_nam
         "n_cpus": n_cpus
     }
     
+    print(f'Finding {n_neighbors} neighbors for {embeddings.shape[0]} images    ')
     start_time = time.perf_counter()
     results = await call_urls(*urls, payload=payload)
     end_time = time.perf_counter()
