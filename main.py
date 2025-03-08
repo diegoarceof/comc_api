@@ -67,20 +67,12 @@ async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_nam
     sorted_indices = np.argsort(-distances, axis=1, )
 
     sorted_images = np.take_along_axis(images, sorted_indices, axis=1)
-
-    n_images = embeddings.shape[0]
-    images_base_url = 'https://temphal9.s3.us-west-2.amazonaws.com/comc/data/0.0.1/extracted/'
-
-    image_urls = np.char.add(images_base_url,  sorted_images[:,:n_neighbors].reshape(n_images*n_neighbors))    
-
-    response = await call_urls(*image_urls)
-    arr_response = np.array(response).reshape((n_images, n_neighbors))
     
     t1 = time.perf_counter()
     print(f'Formatting and downloading: {t1-end_time:.3f} seconds')
     print(f"Total query time taken: {t1 - t0:.3f} seconds")
 
-    return arr_response
+    return sorted_images[:,:n_neighbors]
 
 # Initialize the app
 app = FastAPI()
