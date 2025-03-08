@@ -92,14 +92,14 @@ async def upload_images(
         n_cpus: int = Form(7),
         timestamp: float = Form(...)
     ):
-    t0 = time.time()
+    transfer_time = time.time() - timestamp
     print(f'Finding {n_neighbors} neighbors for {len(files)} images')
-    print(f'Transfer time: {t0-timestamp: .2f} seconds')
+    print(f'Transfer time: {transfer_time: .2f} seconds')
 
     embeddings = get_embeddings([await file.read() for file in files])
     
     response = await main(embeddings, n_neighbors, n_cpus, database_name)
-    return {'names': response.tolist()}
+    return {'names': response.tolist(), 'transfer_time': transfer_time, 'timestamp': time.time()}
 
 if __name__ == "__main__":
     import uvicorn
