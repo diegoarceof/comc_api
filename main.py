@@ -94,7 +94,7 @@ async def upload_images(
     ):
     t0 = time.time()
     print(f'Finding {n_neighbors} neighbors for {len(files)} images')
-    print(f'Transfer time: {timestamp - t0: .2f} seconds')
+    print(f'Transfer time: {t0-timestamp: .2f} seconds')
 
     embeddings = get_embeddings([await file.read() for file in files])
     
