@@ -36,6 +36,7 @@ async def call_urls(*urls, payload = None):
         return results
 
 async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_name: str):    
+    print(f'Finding {n_neighbors} neighbors for {embeddings.shape[0]} images')
     t0 = time.perf_counter()
 
     ips = [
@@ -52,7 +53,7 @@ async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_nam
         "n_cpus": n_cpus
     }
     
-    print(f'Finding {n_neighbors} neighbors for {embeddings.shape[0]} images    ')
+   
     start_time = time.perf_counter()
     results = await call_urls(*urls, payload=payload)
     end_time = time.perf_counter()
@@ -68,7 +69,7 @@ async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_nam
     sorted_indices = np.argsort(-distances, axis=1, )
 
     sorted_images = np.take_along_axis(images, sorted_indices, axis=1)
-    
+
     t1 = time.perf_counter()
     print(f'Formatting and downloading: {t1-end_time:.3f} seconds')
     print(f"Total query time taken: {t1 - t0:.3f} seconds", end = '\n\n')
