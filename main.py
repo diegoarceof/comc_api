@@ -36,7 +36,6 @@ async def call_urls(*urls, payload = None):
         return results
 
 async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_name: str):    
-    print(f'Finding {n_neighbors} neighbors for {embeddings.shape[0]} images')
     t0 = time.perf_counter()
 
     ips = [
@@ -92,7 +91,8 @@ async def upload_images(
         n_neighbors: int = Form(10),
         n_cpus: int = Form(7)
     ):
-
+    print(f'Finding {n_neighbors} neighbors for {len(files)} images')
+    
     embeddings = get_embeddings([await file.read() for file in files])
     
     response = await main(embeddings, n_neighbors, n_cpus, database_name)
