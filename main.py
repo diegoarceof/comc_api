@@ -70,7 +70,7 @@ async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_nam
     sorted_images = np.take_along_axis(images, sorted_indices, axis=1)
 
     t1 = time.perf_counter()
-    print(f'Formatting and downloading: {t1-end_time:.3f} seconds')
+    print(f'Formatting and sorting: {t1-end_time:.3f} seconds')
     print(f"Total query time taken: {t1 - t0:.3f} seconds", end = '\n\n')
 
     return sorted_images[:,:n_neighbors]
@@ -89,10 +89,13 @@ async def upload_images(
         files: List[UploadFile] = File(...),
         database_name: str = Form('COMC'),
         n_neighbors: int = Form(10),
-        n_cpus: int = Form(7)
+        n_cpus: int = Form(7),
+        timestamp: float = Form(...)
     ):
+    t0 = time.time()
     print(f'Finding {n_neighbors} neighbors for {len(files)} images')
-    
+    print(f'Transfer time: {timestamp - t0: .2f} seconds')
+
     embeddings = get_embeddings([await file.read() for file in files])
     
     response = await main(embeddings, n_neighbors, n_cpus, database_name)
