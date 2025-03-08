@@ -71,7 +71,7 @@ async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_nam
     
     t1 = time.perf_counter()
     print(f'Formatting and downloading: {t1-end_time:.3f} seconds')
-    print(f"Total query time taken: {t1 - t0:.3f} seconds")
+    print(f"Total query time taken: {t1 - t0:.3f} seconds", end = '\n\n')
 
     return sorted_images[:,:n_neighbors]
 
