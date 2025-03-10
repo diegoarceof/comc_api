@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from search import query
-from search import save
+from train import save
 
 # Define API parameters
 class QueryParams(BaseModel):
