@@ -4,7 +4,7 @@ import numpy as np
 # Function to create index
 def create_index():
     # Load the database and normalize it. No need to reshape, it is already 2D
-    embeddings_database = np.load('../comc_images/swim_embeddings.npy')
+    embeddings_database = np.load('../../comc_images/swim_embeddings.npy')
     embeddings_database /= np.linalg.norm(embeddings_database, keepdims=True)
     dimensions = embeddings_database.shape[1]
 
@@ -15,7 +15,7 @@ def create_index():
     return index
 
 # Load image names and index
-image_names = np.load('../comc_images/image_names.npy')
+image_names = np.load('../../comc_images/image_names.npy')
 index = create_index()
 
 # Function to query the embeddings

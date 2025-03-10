@@ -4,12 +4,14 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from search import query
+from search import save
 
 # Define API parameters
 class QueryParams(BaseModel):
     embeddings: list[list[float]]
     n_neighbors: int = 5
     n_cpus: int = 3
+    database_name: str = 'COMC'
 
 app = FastAPI()
 
@@ -31,6 +33,19 @@ async def nearest_neighbors(params: QueryParams):
         'distances': distances.tolist(),
         'images': images.tolist()
         }
+
+@app.get("/length")
+async def get_length():
+    return np.load('../comc_images/comc_embeddings.npy', mmap_mode='r').shape[0]
+
+@app.post("/save_embeddings")
+async def save_embeddings(embeddings: list[list[float]], database_name: str):
+    try:
+        save(embeddings)
+        return {'content': 'Database updated succesfully'}, 200
+    except Exception as e:
+        return {'error': f'Error saving embeddings: {str(e)}'}, 400
+
 
 if __name__ == "__main__":
     import uvicorn

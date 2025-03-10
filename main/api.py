@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, File, UploadFile, Form
 from typing import List
 
-from image_utils import get_embeddings
+from model import get_embeddings
 
 async def post_url(session, url, payload):
     async with session.post(url, json=payload) as response:
@@ -51,7 +51,6 @@ async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_nam
         "n_neighbors": n_neighbors,
         "n_cpus": n_cpus
     }
-    
    
     start_time = time.perf_counter()
     results = await call_urls(*urls, payload=payload)
@@ -65,7 +64,7 @@ async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_nam
     images = np.concatenate([result['images'] for result in dict_results], axis=1)
     
     # Sort distances in reverse 
-    sorted_indices = np.argsort(-distances, axis=1, )
+    sorted_indices = np.argsort(-distances, axis=1)
 
     sorted_images = np.take_along_axis(images, sorted_indices, axis=1)
 
@@ -85,7 +84,7 @@ def root():
 
 # Search endpoint to call each API
 @app.post("/search")
-async def upload_images(
+async def search(
         files: List[UploadFile] = File(...),
         database_name: str = Form('COMC'),
         n_neighbors: int = Form(10),
@@ -100,6 +99,23 @@ async def upload_images(
     
     response = await main(embeddings, n_neighbors, n_cpus, database_name)
     return {'names': response.tolist(), 'transfer_time': transfer_time, 'timestamp': time.time()}
+
+@app.post("/save")
+async def save(files: List[UploadFile] = File(...), database_name: str = Form('COMC')):
+    embeddings = get_embeddings([await file.read() for file in files])
+    embeddings = np.array_split(embeddings, 3)
+
+    ips = [
+        '192.168.50.113', # Hal9004 
+        '192.168.50.153', # Hal9005
+        '192.168.50.166'  # Hal9006
+    ]
+
+    length_urls = [f'http://{ip}:8000/length' for ip in ips]
+    lengths = call_urls(*length_urls)    
+
+    print(lengths)
+
 
 if __name__ == "__main__":
     import uvicorn
