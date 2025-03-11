@@ -36,7 +36,7 @@ async def nearest_neighbors(params: QueryParams):
 
 @app.get("/length")
 async def get_length():
-    return np.load('../../comc_images/comc_embeddings.npy', mmap_mode='r').shape[0]
+    return np.load('../../comc_images/image_names.npy', mmap_mode='r').shape[0]
 
 @app.post("/save_embeddings")
 async def save_embeddings(embeddings: list[list[float]], database_name: str):
