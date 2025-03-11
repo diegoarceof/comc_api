@@ -118,7 +118,7 @@ async def save(files: List[UploadFile] = File(...), database_name: str = Form('C
 
         print(lengths)
         save_urls = [f'http://{ip}:8000/save_embeddings' for ip in ips]
-        await call_urls(*save_urls, payload = [{'embeddings': embeddings[ix].tolist() for ix in np.argsort(lengths)}])
+        await call_urls(*save_urls, payload = [{'embeddings': embeddings[ix].tolist()} for ix in np.argsort(lengths)])
         
         return {"message": "Embeddings saved successfully"}, 200
     except Exception as e:
