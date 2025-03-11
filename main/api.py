@@ -106,7 +106,8 @@ async def save(files: List[UploadFile] = File(...), database_name: str = Form('C
     try:
         embeddings = get_embeddings([await file.read() for file in files])
         embeddings = np.array_split(embeddings, 3)
-        print(embeddings.shape)
+        print(f'{type(embeddings)}')
+        print([i.shape for i in embeddings])
 
         ips = [
             '192.168.50.113', # Hal9004 
