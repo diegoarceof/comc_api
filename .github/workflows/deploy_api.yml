@@ -23,7 +23,6 @@ jobs:
         run: mkdir -p ~/.ssh && echo "StrictHostKeyChecking no" >> ~/.ssh/config
 
       - name: Pull Latest Changes, Setup Virtual Environment, and Install Requirements on Other Servers
-        if: ${{ contains(github.event.head_commit.message, 'api/') }}
         run: |
           for n in 4 5 6; do
             ssh -o StrictHostKeyChecking=no -p 2200$n hal900$n@compute.hal9.com "cd comc_api/ && git stash && git pull origin main && \

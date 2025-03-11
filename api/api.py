@@ -42,6 +42,7 @@ async def get_length():
 async def save_embeddings(embeddings: list[list[float]], database_name: str):
     try:
         save(embeddings, database_name)
+        
         return {'content': 'Database updated succesfully'}, 200
     except Exception as e:
         return {'error': f'Error saving embeddings: {str(e)}'}, 400

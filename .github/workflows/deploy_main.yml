@@ -23,7 +23,6 @@ jobs:
         run: mkdir -p ~/.ssh && echo "StrictHostKeyChecking no" >> ~/.ssh/config
 
       - name: Pull Latest Changes, Setup Virtual Environment, and Install Requirements on Main Server
-        if: ${{ contains(github.event.head_commit.message, 'main/') }}
         run: |
           ssh -o StrictHostKeyChecking=no -p 22001 hal9001@compute.hal9.com "cd comc_api/ && git stash && git pull origin main && \
           if [ ! -d '.venv' ]; then python3 -m venv .venv; fi && \
