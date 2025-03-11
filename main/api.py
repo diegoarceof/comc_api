@@ -6,7 +6,7 @@ import numpy as np
 
 from datetime import datetime, timezone
 from fastapi import FastAPI, File, UploadFile, Form
-from typing import List
+from typing import List, Optional
 
 from model import get_embeddings
 
@@ -89,7 +89,7 @@ async def search(
         database_name: str = Form('COMC'),
         n_neighbors: int = Form(10),
         n_cpus: int = Form(7),
-        timestamp: float = Form(...)
+        timestamp: float = Form(datetime.now(timezone.utc).timestamp())
     ):
     transfer_time = datetime.now(timezone.utc).timestamp() - timestamp
     print(f'Finding {n_neighbors} neighbors for {len(files)} images')
