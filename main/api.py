@@ -112,7 +112,7 @@ async def save(files: List[UploadFile] = File(...), database_name: str = Form('C
     ]
 
     length_urls = [f'http://{ip}:8000/length' for ip in ips]
-    lengths = call_urls(*length_urls)    
+    lengths = await call_urls(*length_urls)    
 
     print(lengths)
 
