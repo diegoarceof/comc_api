@@ -2,7 +2,7 @@ name: Deploy API to Main Server
 
 on:
   push:
-    path:
+    paths:
       - 'main/**' 
 
 jobs:

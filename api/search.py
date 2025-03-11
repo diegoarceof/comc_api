@@ -14,7 +14,7 @@ def create_index():
 
     return index
 
-# Load image names and index
+# Load image names and create the index
 image_names = np.load('../../comc_images/image_names.npy')
 index = create_index()
 

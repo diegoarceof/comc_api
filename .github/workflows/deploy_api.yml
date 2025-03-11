@@ -2,7 +2,7 @@ name: Deploy API to Remote Machines
 
 on:
   push:
-    path:
+    paths:
       - 'api/**' 
 
 jobs:
