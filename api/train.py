@@ -6,4 +6,5 @@ def save(embeddings: list[list[float]]):
     current = np.load("../../comc_embeddings", mmap_mode='r+')
     updated = np.concatenate((current, embeddings), axis = 0)
 
-    np.save("../../comc_embeddings", axis = 0)
+    print(f'Saving new embeddings. New total: {updated.shape[0] + current.shape[0]}')
+    # np.save("../../comc_embeddings", axis = 0)

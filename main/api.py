@@ -6,7 +6,7 @@ import numpy as np
 
 from datetime import datetime, timezone
 from fastapi import FastAPI, File, UploadFile, Form
-from typing import List, Optional
+from typing import List, Union
 
 from model import get_embeddings
 
@@ -22,19 +22,20 @@ async def get_url(session, url):
         else:
             return await response.read() 
 
-async def call_urls(*urls, payload = None):    
+async def call_urls(*urls, payload: Union[dict, list] = None):    
     async with aiohttp.ClientSession() as session:
         if payload is None:
-            method = lambda url: get_url(session, url)
+            tasks = [asyncio.create_task(get_url(session, url)) for url in urls]
+        elif isinstance(payload, dict):
+            tasks = [asyncio.create_task(post_url(session, url, payload)) for url in urls]
+        elif isinstance(payload, list):
+            tasks = [asyncio.create_task(post_url(session, url, p)) for url, p in zip(urls, payload)]
         else:
-            method = lambda url: post_url(session, url, payload)
-
-        tasks = [asyncio.create_task(method(url)) for url in urls]
+            raise ValueError('payload should be None, a dictionary or a list of dictionaries')
                 
         # Wait for all tasks to complete and return results
-        results = await asyncio.gather(*tasks)
-        return results
-
+        return await asyncio.gather(*tasks)
+        
 async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_name: str):    
     t0 = time.perf_counter()
 
@@ -102,19 +103,27 @@ async def search(
 
 @app.post("/save")
 async def save(files: List[UploadFile] = File(...), database_name: str = Form('COMC')):
-    embeddings = get_embeddings([await file.read() for file in files])
-    embeddings = np.array_split(embeddings, 3)
+    try:
+        embeddings = get_embeddings([await file.read() for file in files])
+        embeddings = np.array_split(embeddings, 3)
 
-    ips = [
-        '192.168.50.113', # Hal9004 
-        '192.168.50.153', # Hal9005
-        '192.168.50.166'  # Hal9006
-    ]
+        ips = [
+            '192.168.50.113', # Hal9004 
+            '192.168.50.153', # Hal9005
+            '192.168.50.166'  # Hal9006
+        ]
 
-    length_urls = [f'http://{ip}:8000/length' for ip in ips]
-    lengths = await call_urls(*length_urls)    
+        length_urls = [f'http://{ip}:8000/length' for ip in ips]
+        lengths = await call_urls(*length_urls)    
 
-    print(lengths)
+        print(lengths)
+        save_urls = [f'http://{ip}:8000/save_embeddings' for ip in ips]
+        await call_urls(*save_urls, payload = [{'embeddings': embeddings[ix] for ix in np.argsort(lengths)}])
+        
+        return {"message": "Embeddings saved successfully"}, 200
+    except Exception as e:
+        print(f'Error saving new embeddings: {str(e)}')
+        return {"error": str(e)}, 500
 
 if __name__ == "__main__":
     import uvicorn
