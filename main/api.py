@@ -125,7 +125,7 @@ async def save(files: List[UploadFile] = File(...), database_name: str = Form('C
         save_urls = [f'http://{ip}:8000/save_embeddings' for ip in ips]
         await call_urls(
             *save_urls,
-            payload = [{'embeddings': embeddings[ix].tolist(), 'database_name': database_name} for ix in np.argsort(lengths)]
+            payload = [{'embeddings': embeddings[ix].tolist(), 'database_name': database_name} for ix in np.argsort(lengths) if embeddings[ix].shape[0] != 0]
             )
         
         return JSONResponse(
