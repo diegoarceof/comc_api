@@ -51,6 +51,7 @@ async def save_embeddings(params: SaveParams):
         print(f'{new_total} embeddings in the database')
         return {'content': f'{params.database_name} database updated succesfully'}, 200
     except Exception as e:
+        print(f'Error saving embeddings {str(e)}')
         return {'error': f'Error saving embeddings: {str(e)}'}, 400
 
 
