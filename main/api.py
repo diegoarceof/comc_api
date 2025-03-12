@@ -125,10 +125,10 @@ async def save(files: List[UploadFile] = File(...), database_name: str = Form('C
             payload = [{'embeddings': embeddings[ix].tolist(), 'database_name': database_name} for ix in np.argsort(lengths)]
             )
         
-        return {"message": "Embeddings saved successfully"}, 200
+        return {"message": "Embeddings saved successfully", "status_code": 200}
     except Exception as e:
         print(f'Error saving new embeddings: {str(e)}')
-        return {"error": str(e)}, 500
+        return {"error": str(e), "status_code": 500}
 
 if __name__ == "__main__":
     import uvicorn
