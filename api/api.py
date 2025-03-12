@@ -46,7 +46,8 @@ class SaveParams(BaseModel):
 @app.post("/save_embeddings")
 async def save_embeddings(params: SaveParams):
     try:
-        save(params.embeddings, params.database_name)
+        new_total = save(params.embeddings, params.database_name)
+        print(f'{new_total} embeddings in the database')
         return {'content': f'{params.database_name} database updated succesfully'}, 200
     except Exception as e:
         return {'error': f'Error saving embeddings: {str(e)}'}, 400
