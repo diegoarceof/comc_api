@@ -45,6 +45,7 @@ class SaveParams(BaseModel):
 
 @app.post("/save_embeddings")
 async def save_embeddings(params: SaveParams):
+    print(f'Saving {len(params.embeddings)} on {params.database_name}')
     try:
         new_total = save(params.embeddings, params.database_name)
         print(f'{new_total} embeddings in the database')
