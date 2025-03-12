@@ -120,6 +120,7 @@ async def save(files: List[UploadFile] = File(...), database_name: str = Form('C
 
         length_urls = [f'http://{ip}:8000/length' for ip in ips]
         lengths = await call_urls(*length_urls)    
+        print(np.argsort(lengths))
 
         print(lengths)
         save_urls = [f'http://{ip}:8000/save_embeddings' for ip in ips]
