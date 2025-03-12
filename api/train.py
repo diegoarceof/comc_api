@@ -7,4 +7,4 @@ def save(embeddings: list[list[float]], database_name: str):
     updated = np.concatenate((current, embeddings), axis = 0)
 
     # np.save("../../comc_embeddings", axis = 0)
-    return updated.shape[0] + current.shape[0]
+    return updated.shape[0]
