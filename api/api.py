@@ -1,6 +1,7 @@
 import numpy as np
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from search import query
@@ -29,10 +30,9 @@ async def nearest_neighbors(params: QueryParams):
     n_cpus = params.n_cpus
 
     distances, images = query(embeddings, n_neighbors, n_cpus)
-    return {
-        'distances': distances.tolist(),
-        'images': images.tolist()
-        }
+    return JSONResponse(
+        content={'distances': distances.tolist(), 'images': images.tolist()},
+        status_code=200)
 
 @app.get("/length")
 async def get_length():
@@ -49,10 +49,14 @@ async def save_embeddings(params: SaveParams):
     try:
         new_total = save(params.embeddings, params.database_name)
         print(f'{new_total} embeddings in the database')
-        return {"content": f"{params.database_name} database updated succesfully", "status_code": 200}
+        return JSONResponse(
+            content=f"{params.database_name} database updated succesfully",
+            status_code=200)
     except Exception as e:
         print(f'Error saving embeddings {str(e)}')
-        return {"error": f"Error saving embeddings: {str(e)}", "status_code": 400}
+        return JSONResponse(
+            content={"error": f"Error saving embeddings: {str(e)}"}, 
+            status_code=400)
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ import numpy as np
 
 from datetime import datetime, timezone
 from fastapi import FastAPI, File, UploadFile, Form
+from fastapi.responses import JSONResponse
 from typing import List, Union
 
 from model import get_embeddings
@@ -81,7 +82,7 @@ app = FastAPI()
 # Root endpoint to test connection
 @app.get("/")
 def root():
-    return {"message": "COMC nearest neighbor search"}
+    return JSONResponse(content = {"message": "COMC nearest neighbor search"}, status_code = 200)
 
 # Search endpoint to call each API
 @app.post("/search")
@@ -99,7 +100,9 @@ async def search(
     embeddings = get_embeddings([await file.read() for file in files])
     
     response = await main(embeddings, n_neighbors, n_cpus, database_name)
-    return {'names': response.tolist(), 'transfer_time': transfer_time, 'timestamp': time.time()}
+    return JSONResponse(
+        content = {'names': response.tolist(), 'transfer_time': transfer_time, 'timestamp': time.time()},
+        status_code = 200)
 
 @app.post("/save")
 async def save(files: List[UploadFile] = File(...), database_name: str = Form('COMC')):
@@ -125,10 +128,16 @@ async def save(files: List[UploadFile] = File(...), database_name: str = Form('C
             payload = [{'embeddings': embeddings[ix].tolist(), 'database_name': database_name} for ix in np.argsort(lengths)]
             )
         
-        return {"message": "Embeddings saved successfully", "status_code": 200}
+        return JSONResponse(
+            content = {"message": "Embeddings saved successfully"},
+            status_code = 200
+            )
+    
     except Exception as e:
         print(f'Error saving new embeddings: {str(e)}')
-        return {"error": str(e), "status_code": 500}
+        return JSONResponse(
+            content = {"error": str(e)},
+            status_code = 500)
 
 if __name__ == "__main__":
     import uvicorn
