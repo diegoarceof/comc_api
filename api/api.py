@@ -6,19 +6,19 @@ from pydantic import BaseModel
 from search import query
 from train import save
 
-# Define API parameters
-class QueryParams(BaseModel):
-    embeddings: list[list[float]]
-    n_neighbors: int = 5
-    n_cpus: int = 3
-    database_name: str = 'COMC'
-
 app = FastAPI()
 
 # Root endpoint to test connection
 @app.get("/")
 def root():
     return {"message": "COMC nearest neighbor search"}
+
+# Define API parameters
+class QueryParams(BaseModel):
+    embeddings: list[list[float]]
+    n_neighbors: int = 5
+    n_cpus: int = 3
+    database_name: str = 'COMC'
 
 # Endpoint to query the database
 @app.post("/nearest_neighbors")
@@ -38,11 +38,16 @@ async def nearest_neighbors(params: QueryParams):
 async def get_length():
     return np.load('../../comc_images/image_names.npy', mmap_mode='r').shape[0]
 
+# Define the saving parameters:
+class SaveParams(BaseModel):
+    embeddings: list[list[float]]
+    database_name: str = 'COMC'
+
 @app.post("/save_embeddings")
-async def save_embeddings(embeddings: list[list[float]], database_name: str):
+async def save_embeddings(params: SaveParams):
     try:
-        save(embeddings, database_name)
-        return {'content': 'Database updated succesfully'}, 200
+        save(params.embeddings, params.database_name)
+        return {'content': f'{params.database_name} database updated succesfully'}, 200
     except Exception as e:
         return {'error': f'Error saving embeddings: {str(e)}'}, 400
 
