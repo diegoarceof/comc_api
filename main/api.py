@@ -67,18 +67,15 @@ def root():
 
 ########## SEARCH ENDPOINT ##########
 class SearchParams(BaseModel):
-    files: List[UploadFile] = File(...)
     database_name: str = Form('COMC')
-    
     n_neighbors: int = Form(10)
     n_cpus: int = Form(7)
     
     timestamp: float = Form(datetime.now(timezone.utc).timestamp())
 
 @app.post("/search")
-async def search(params: SearchParams):
+async def search(files: List[UploadFile] = File(...), params: SearchParams = Form(...)):
     # Extract keys from the parameters
-    files = params.files
     database_name = params.database_name
     n_neighbors = params.n_neighbors
     n_cpus = params.n_cpus
@@ -131,22 +128,15 @@ async def search(params: SearchParams):
 
 
 ########## SAVE ENDPOINT ##########
-class SaveParams(BaseModel):
-    files: List[UploadFile] = File(...)
-    database_name: str = Form('COMC')
-
-# Function to get the locks of each database to update
 def get_db_lock(database_name: str) -> asyncio.Lock:
+    # Function to get the locks of each database to update
     if (database_name not in db_locks):
         db_locks[database_name] = asyncio.Lock()
 
     return db_locks[database_name]
 
 @app.post("/save")
-async def save(params: SaveParams):
-    files = params.files
-    database_name = params.database_name
-
+async def save(files: List[UploadFile] = File(...), database_name: str = Form('COMC')):
     save_urls = [f'http://{ip}:8000/save_embeddings' for ip in IPS]
 
     async with get_db_lock(database_name):
