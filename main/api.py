@@ -67,11 +67,11 @@ def root():
 
 ########## SEARCH ENDPOINT ##########
 class SearchParams(BaseModel):
-    database_name: str = Form('COMC')
-    n_neighbors: int = Form(10)
-    n_cpus: int = Form(7)
+    database_name: str = 'COMC'
+    n_neighbors: int = 10
+    n_cpus: int = 7
     
-    timestamp: float = Form(datetime.now(timezone.utc).timestamp())
+    timestamp: float = datetime.now(timezone.utc).timestamp()
 
 @app.post("/search")
 async def search(files: List[UploadFile] = File(...), params: SearchParams = Form(...)):
