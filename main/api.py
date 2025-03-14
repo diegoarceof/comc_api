@@ -1,16 +1,19 @@
 import aiohttp
 import asyncio
 import time
+import uvicorn
 
 import numpy as np
 
 from datetime import datetime, timezone
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
-from typing import List, Union
+from pydantic import BaseModel
+from typing import List, Union, Dict, Optional
 
 from model import get_embeddings
 
+# Util functions for calling urls asynchronously
 async def post_url(session, url, payload):
     async with session.post(url, json=payload) as response:
         print(f'URL: {url}, {response.status}')
@@ -23,7 +26,7 @@ async def get_url(session, url):
         else:
             return await response.read() 
 
-async def call_urls(*urls, payload: Union[dict, list] = None):    
+async def call_urls(urls, payload: Optional[Union[Dict, List[Dict]]] = None):    
     async with aiohttp.ClientSession() as session:
         if payload is None:
             tasks = [asyncio.create_task(get_url(session, url)) for url in urls]
@@ -36,110 +39,159 @@ async def call_urls(*urls, payload: Union[dict, list] = None):
                 
         # Wait for all tasks to complete and return results
         return await asyncio.gather(*tasks)
-        
-async def main(embeddings: np.array, n_neighbors: int, n_cpus: int, database_name: str):    
-    t0 = time.perf_counter()
 
-    ips = [
+# IPs of the remote machines
+IPS = [
         '192.168.50.113', # Hal9004 
         '192.168.50.153', # Hal9005
         '192.168.50.166'  # Hal9006
-    ]
-    urls = [f'http://{ip}:8000/nearest_neighbors' for ip in ips]
+]        
+
+# Initialize the app
+app = FastAPI()
+db_locks: Dict[str, asyncio.Lock] = {}
+
+# Store the start time
+start_time = datetime.now(timezone.utc)
+
+
+########## ROOT ENDPOINT ##########
+@app.get("/")
+def root():
+    content = {
+        "message": "COMC nearest neighbor search",
+        "up_since": start_time.isoformat()
+    }
+    return JSONResponse(content=content)
+
+
+########## SEARCH ENDPOINT ##########
+class SearchParams(BaseModel):
+    files: List[UploadFile] = File(...)
+    database_name: str = Form('COMC')
+    
+    n_neighbors: int = Form(10)
+    n_cpus: int = Form(7)
+    
+    timestamp: float = Form(datetime.now(timezone.utc).timestamp())
+
+@app.post("/search")
+async def search(params: SearchParams):
+    # Extract keys from the parameters
+    files = params.files
+    database_name = params.database_name
+    n_neighbors = params.n_neighbors
+    n_cpus = params.n_cpus
+    timestamp = params.timestamp
+
+    transfer_time = datetime.now(timezone.utc).timestamp() - timestamp
+    print(f'Finding {n_neighbors} neighbors for {len(files)} images')
+    print(f'Transfer time: {transfer_time: .2f} seconds')
+
+    t0 = time.perf_counter()
+    embeddings = get_embeddings([await file.read() for file in files])
+    
+    t1 = time.perf_counter()
+    urls = [f'http://{ip}:8000/nearest_neighbors' for ip in IPS]
 
     # Common payload for all endpoints
     payload = {
         "embeddings": embeddings.tolist(),
         "n_neighbors": n_neighbors,
-        "n_cpus": n_cpus
+        "n_cpus": n_cpus,
+        "database_name": database_name
     }
    
     start_time = time.perf_counter()
-    results = await call_urls(*urls, payload=payload)
+    results = await call_urls(urls, payload)
     end_time = time.perf_counter()
     
-    print(f"All requests completed in {end_time - start_time:.3f} seconds")
-    
-    dict_results = [result for result in results if isinstance(result, dict)]
-    distances = np.concatenate([result['distances'] for result in dict_results], axis=1)
-    
-    images = np.concatenate([result['images'] for result in dict_results], axis=1)
+    valid_results = [result for result in results if ('error' not in result)]
+
+    distances = np.concatenate([result['distances'] for result in valid_results], axis=1)
+    images = np.concatenate([result['images'] for result in valid_results], axis=1)
     
     # Sort distances in reverse 
     sorted_indices = np.argsort(-distances, axis=1)
-
     sorted_images = np.take_along_axis(images, sorted_indices, axis=1)
 
-    t1 = time.perf_counter()
-    print(f'Formatting and sorting: {t1-end_time:.3f} seconds')
-    print(f"Total query time taken: {t1 - t0:.3f} seconds", end = '\n\n')
+    t2 = time.perf_counter()
+    print(f"All requests completed in {end_time - start_time:.3f} seconds")
+    print(f'Formatting and sorting: {t2-end_time:.3f} seconds')
+    print(f'Time calculating embeddings: {t1-t0:.3f}')
+    print(f"Total query time taken: {t2 - t0:.3f} seconds", end = '\n\n')
 
-    return sorted_images[:,:n_neighbors]
+    content = {
+        'names': sorted_images.tolist(), 
+        'transfer_time': transfer_time, 
+        'timestamp': datetime.now(timezone.utc).timestamp()
+    }
 
-# Initialize the app
-app = FastAPI()
+    return JSONResponse(content=content)
 
-# Root endpoint to test connection
-@app.get("/")
-def root():
-    return JSONResponse(content = {"message": "COMC nearest neighbor search"}, status_code = 200)
 
-# Search endpoint to call each API
-@app.post("/search")
-async def search(
-        files: List[UploadFile] = File(...),
-        database_name: str = Form('COMC'),
-        n_neighbors: int = Form(10),
-        n_cpus: int = Form(7),
-        timestamp: float = Form(datetime.now(timezone.utc).timestamp())
-    ):
-    transfer_time = datetime.now(timezone.utc).timestamp() - timestamp
-    print(f'Finding {n_neighbors} neighbors for {len(files)} images')
-    print(f'Transfer time: {transfer_time: .2f} seconds')
+########## SAVE ENDPOINT ##########
+class SaveParams(BaseModel):
+    files: List[UploadFile] = File(...)
+    database_name: str = Form('COMC')
 
-    embeddings = get_embeddings([await file.read() for file in files])
-    
-    response = await main(embeddings, n_neighbors, n_cpus, database_name)
-    return JSONResponse(
-        content = {'names': response.tolist(), 'transfer_time': transfer_time, 'timestamp': time.time()},
-        status_code = 200)
+# Function to get the locks of each database to update
+def get_db_lock(database_name: str) -> asyncio.Lock:
+    if (database_name not in db_locks):
+        db_locks[database_name] = asyncio.Lock()
+
+    return db_locks[database_name]
 
 @app.post("/save")
-async def save(files: List[UploadFile] = File(...), database_name: str = Form('COMC')):
-    try:
-        embeddings = get_embeddings([await file.read() for file in files])
-        embeddings = np.array_split(embeddings, 3)
-        print(f'{type(embeddings)}')
-        print([i.shape for i in embeddings])
+async def save(params: SaveParams):
+    files = params.files
+    database_name = params.database_name
 
-        ips = [
-            '192.168.50.113', # Hal9004 
-            '192.168.50.153', # Hal9005
-            '192.168.50.166'  # Hal9006
-        ]
+    save_urls = [f'http://{ip}:8000/save_embeddings' for ip in IPS]
 
-        length_urls = [f'http://{ip}:8000/length' for ip in ips]
-        lengths = await call_urls(*length_urls)    
-        print(np.argsort(lengths))
+    async with get_db_lock(database_name):
+        try:
+            ## Get the embeddings and names of the uploaded images
+            embeddings = get_embeddings([await file.read() for file in files])
+            embeddings = np.array_split(embeddings, len(IPS))
 
-        print(lengths)
-        save_urls = [f'http://{ip}:8000/save_embeddings' for ip in ips]
-        await call_urls(
-            *save_urls,
-            payload = [{'embeddings': embeddings[ix].tolist(), 'database_name': database_name} for ix in np.argsort(lengths)]
-            )
-        
-        return JSONResponse(
-            content = {"message": "Embeddings saved successfully"},
-            status_code = 200
-            )
-    
-    except Exception as e:
-        print(f'Error saving new embeddings: {str(e)}')
-        return JSONResponse(
-            content = {"error": str(e)},
-            status_code = 500)
+            names = [file.filename for file in files]
+            names = np.array_split(names, len(IPS)) 
+
+            ## Get the length of the database in each remote computer
+            length_urls = [f'http://{ip}:8000/nearest_neighbors' for ip in IPS]
+            lengths = await call_urls(length_urls) 
+        except Exception as e:
+            content = {
+                'message': 'Unable to calculate to calculate embeddings or get database lengths.',
+                'error': str(e)
+            }
+            return JSONResponse(content=content, status_code=400)
+
+        try:    
+            ## Call the first phase of the saving process: prepare
+            responses = await call_urls(save_urls, payload = {'phase': 'prepare', 'database_name': database_name})
+            if any(response.get('status_code') == 400 for response in responses):
+                raise ValueError('Prepare phase not successful')
+            
+            ## Call the second phase of the saving process: commit
+            commit_payloads = [{'embeddings': embeddings[ix].tolist(), 
+                                'names': names[ix].tolist(), 
+                                'database_name': database_name,
+                                'phase': 'commit'} for ix in np.argsort(lengths)]
+            
+            responses = await call_urls(save_urls, commit_payloads)
+            if any(response.get('status_code') == 400 for response in responses):
+                raise ValueError('Commit phase not successful')
+            
+            return JSONResponse(content={'message': 'Embeddings saved successfully'})
+
+        except Exception as e:
+            # If an error arises on the first two steps, roll back any changes
+            await call_urls(save_urls, {'database_name': database_name, 'phase': 'rollback'})
+
+            return JSONResponse(content={'error': str(e)}, status_code=400)
+
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
