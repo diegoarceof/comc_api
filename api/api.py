@@ -5,7 +5,7 @@ from enum import Enum
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
-from typing import Optional
+from typing import Optional, Self
 
 from search import query
 from train import prepare, commit, rollback
@@ -57,15 +57,14 @@ class SaveParams(BaseModel):
     database_name: str = 'COMC'
     phase: PhaseEnum
 
-    @model_validator(pre=True)
-    def check_commit_params(cls, values):
-        phase = values.get('phase')
-        if phase == 'commit':
-            if values.get('embeddings') is None:
-                raise ValueError('embeddings must be provided for commit phase')
-            if values.get('names') is None:
-                raise ValueError('names must be provided for commit phase')
-        return values
+    @model_validator(mode='after')
+    def check_phase(self) -> Self:
+        if self.phase == PhaseEnum.commit:
+            if self.embeddings is None:
+                raise ValueError("embeddings cannot be None when phase is 'commit'")
+            if self.names is None:
+                raise ValueError("names cannot be None when phase is 'commit'")
+        return self
 
 @app.post("/save_embeddings")
 async def save_embeddings(params: SaveParams):
